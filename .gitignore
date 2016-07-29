@@ -3,4 +3,3 @@ vertica_parity.egg-info/**/*
 .idea/**/*
 logs/**/*
 **.pyc
-*.json
