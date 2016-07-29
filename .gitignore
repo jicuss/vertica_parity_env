@@ -1,0 +1,6 @@
+vertica_parity_environment/**/*
+vertica_parity.egg-info/**/*
+.idea/**/*
+logs/**/*
+**.pyc
+*.json

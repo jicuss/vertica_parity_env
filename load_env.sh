@@ -1,0 +1,2 @@
+VIRTUAL_ENV_PATH=/Users/jicuss/Documents/TestCases/github_examples/vertica_parity_env/vertica_parity_environment
+source $VIRTUAL_ENV_PATH/bin/activate
