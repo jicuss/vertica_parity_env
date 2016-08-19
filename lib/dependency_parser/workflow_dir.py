@@ -31,5 +31,23 @@ class WorkflowDirectory:
         for file in sql_files:
             json_data.append(file.dict())
 
+        total = []
+        total_h = {
+                'directory': 'all',
+                'filename': 'all',
+                'accessed': [],
+                'modified': []
+                }
+
+        for file in sql_files:
+            for k in ['accessed','modified']:
+                total_h[k] += file.dict()[k]
+                total_h[k] = list(set(total_h[k]))
+                total_h[k].sort()
+
+        total_h['accessed'] = filter(lambda x: x not in total_h['modified'],total_h['accessed'])
+
+        json_data.append(total_h)
+
         with open(os.path.basename(self.directory) + '.json', 'w') as f:
             f.writelines(json.dumps(json_data, sort_keys=True, indent=4))

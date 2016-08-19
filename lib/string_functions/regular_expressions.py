@@ -88,6 +88,8 @@ def scan_for_updates(string):
     results = []
     string = prepare_sql_statement(string)
     matches = re.findall(r'update (\S+)', string)
+    merge_matches = re.findall(r'merge into (\S+)', string)
+    matches.extend(merge_matches)
 
     for m in matches:
             results.append(m)
@@ -118,3 +120,40 @@ def test_if_alias_or_table(string):
     m = re.match(r'\<\S+\>|\S+\.\S+', string)
     if m:
         return True
+
+
+def replace_sequences_with_ints(string):
+    '''
+        Used against a schema definition. Replaces sequence references with integers.
+        This allows you to insert data from one schema into another and maintain consistent natural keys
+        Example:
+            - Input: TAXML_ID int NOT NULL DEFAULT nextval('CTG_ANALYTICS_SRC.TRN_TAXML_SEQ'),
+            - Output: TAXML_ID int NOT NULL,
+    '''
+
+def replace_primary_with_ints(string):
+    '''
+        Used against a schema definition. Replaces sequence references with integers.
+        This allows you to insert data from one schema into another and maintain consistent natural keys
+        Example:
+            - Input: TAXML_ID int NOT NULL DEFAULT nextval('CTG_ANALYTICS_SRC.TRN_TAXML_SEQ'),
+            - Output: TAXML_ID int NOT NULL,
+    '''
+
+    return re.sub(r"nextval\('\S+'\)", '', string)
+
+
+def remove_alter_table_statements(string):
+    '''
+        Used against a schema definition. Removes all alter table statements.
+        In practice this is used for situations where you want to remove all the constraints imposed on the table or schema
+        Example:
+            - Input: ALTER TABLE CTG_ANALYTICS_SRC.TRN_OCR_PERFORMANCE ADD CONSTRAINT PK_TRN_OCR_PERFORMANCE PRIMARY KEY (OCR_PERFORMANCE_ID);
+            - Output:
+    '''
+    return re.sub(r'ALTER\sTABLE[\s|\S]+?;', '', string)
+
+
+
+
+

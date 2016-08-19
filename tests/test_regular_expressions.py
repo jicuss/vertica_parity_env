@@ -37,17 +37,12 @@ class RegularExpressionTests(unittest.TestCase):
             example: FROM ((CTG_ANALYTICS.SUB_CUSTOMER_SEGMENT a
         '''
         string = '''
-                CREATE  VIEW CTG_ANALYTICS_WS.rj_sub_customer_segment AS
-         SELECT a.CUSTOMER_KEY,
-                a.TAX_YEAR,
-                a.CUSTOMER_TYPE_ID,
-                a.CUSTOMER_DEFINITION_ID,
-                c.CUSTOMER_TYPE_ROLLUP,
-                c.CUSTOMER_TYPE,
-                b.CUSTOMER_DEFINITION
-         FROM ((CTG_ANALYTICS.SUB_CUSTOMER_SEGMENT a LEFT JOIN CTG_ANALYTICS.DIM_CUSTOMER_DEFINITION b ON ((a.CUSTOMER_DEFINITION_ID = b.CUSTOMER_DEFINITION_ID))) LEFT JOIN CTG_ANALYTICS.DIM_CUSTOMER_TYPE c ON ((a.CUSTOMER_TYPE_ID = c.CUSTOMER_TYPE_ID)));
+        CREATE  VIEW EXAMPLE_SCHEMA_WS.rj_segment AS
+         SELECT a.CUSTOMER,
+                a.YEAR
+         FROM ((EXAMPLE_SCHEMA.SUB_CUSTOMER_SEGMENT a LEFT JOIN EXAMPLE_SCHEMA.DIM_CUSTOMER_DEFINITION b ON ((a.CUSTOMER_DEFINITION_ID = b.CUSTOMER_DEFINITION_ID))) LEFT JOIN EXAMPLE_SCHEMA.DIM_CUSTOMER_TYPE c ON ((a.CUSTOMER_TYPE_ID = c.CUSTOMER_TYPE_ID)));
         '''
-        self.assertEquals(scan_for_froms(string), ['ctg_analytics.sub_customer_segment'])
+        self.assertEquals(scan_for_froms(string), ['example_schema.sub_customer_segment'])
 
     def test_add_space_after_string(self):
         string = 'something)'
@@ -113,6 +108,21 @@ class RegularExpressionTests(unittest.TestCase):
         self.assertFalse(test_if_alias_or_table('something'))
         self.assertTrue(test_if_alias_or_table('something.something'))
         self.assertTrue(test_if_alias_or_table('<something>.something'))
+
+    def test_replace_primary_with_ints(self):
+        self.assertEquals(replace_primary_with_ints("USER_ID int NOT NULL DEFAULT nextval('EXAMPLE_SCHEMA.TRN_TAXML_SEQ'),"),"USER_ID int NOT NULL DEFAULT ,")
+        self.assertEquals(replace_primary_with_ints("USER_ID int NOT NULL DEFAULT nextval('EXAMPLE_SCHEMA.TRN_TAXML_SEQ');"),"USER_ID int NOT NULL DEFAULT ;")
+        self.assertEquals(replace_primary_with_ints("USER_ID int NOT NULL DEFAULT nextval('EXAMPLE_SCHEMA.TRN_TAXML_SEQ'))"),"USER_ID int NOT NULL DEFAULT )")
+
+
+    def test_remove_alter_table_statements(self):
+        string = '''
+            CREATE TABLE RANDOM (CREATED_TIMESTAMP timestamp NOT NULL DEFAULT statement_timestamp(),UPDATED_TIMESTAMP timestamp);
+            ALTER TABLE RANDOM.RANDOM ADD CONSTRAINT PK_FACT_ACCEPTED_REFUND PRIMARY KEY (FILING_ID, TAX_YEAR, SEQUENCE_NUMBER);
+            be sure not to remove this line
+            ALTER TABLE RANDOM.RANDOM ADD CONSTRAINT PK_AGG_CUSTOMER_ACCEPTED_REFUND PRIMARY KEY (PRIMARY_ID, TAX_YEAR);
+        '''
+        self.assertEquals(remove_alter_table_statements(string),'\n            CREATE TABLE RANDOM (CREATED_TIMESTAMP timestamp NOT NULL DEFAULT statement_timestamp(),UPDATED_TIMESTAMP timestamp);\n            \n            be sure not to remove this line\n            \n        ')
 
 if __name__ == '__main__':
     unittest.main()

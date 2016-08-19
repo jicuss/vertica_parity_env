@@ -49,6 +49,7 @@ class SQLFile:
             if table in self.accessed:
                 self.accessed.remove(table)
 
+
     def dict(self):
         return {
                 'directory': self.directory,
